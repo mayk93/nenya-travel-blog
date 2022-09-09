@@ -15,14 +15,11 @@ import * as styles from './blog-post.module.css'
 
 class BlogPostTemplate extends React.Component {
   render() {
-    const post = get(this.props, 'data.contentfulBlogPost')
+    const post = get(this.props, 'data.contentfulSimpleBlogPost')
+    console.log('BlogPostTemplate post: ', JSON.stringify(post));
     const previous = get(this.props, 'data.previous')
     const next = get(this.props, 'data.next')
-    const plainTextDescription = documentToPlainTextString(
-      JSON.parse(post.description.raw)
-    )
-    const plainTextBody = documentToPlainTextString(JSON.parse(post.body.raw))
-    const { minutes: timeToRead } = readingTime(plainTextBody)
+    const { minutes: timeToRead } = readingTime(post?.body.body)
     
     const options = {
       renderNode: {
@@ -40,16 +37,6 @@ class BlogPostTemplate extends React.Component {
 
     return (
       <Layout location={this.props.location}>
-        <Seo
-          title={post.title}
-          description={plainTextDescription}
-          image={`http:${post.heroImage.resize.src}`}
-        />
-        <Hero
-          image={post.heroImage?.gatsbyImage}
-          title={post.title}
-          content={post.description}
-        />
         <div className={styles.container}>
           <span className={styles.meta}>
             {post.author?.name} &middot;{' '}
@@ -58,7 +45,7 @@ class BlogPostTemplate extends React.Component {
           </span>
           <div className={styles.article}>
             <div className={styles.body}>
-              {post.body?.raw && renderRichText(post.body, options)}
+              {post.body?.body}
             </div>
             <Tags tags={post.tags} />
             {(previous || next) && (
@@ -91,41 +78,47 @@ class BlogPostTemplate extends React.Component {
 export default BlogPostTemplate
 
 export const pageQuery = graphql`
-  query BlogPostBySlug(
-    $slug: String!
-    $previousPostSlug: String
-    $nextPostSlug: String
-  ) {
-    contentfulBlogPost(slug: { eq: $slug }) {
+  query BlogPostBySlug {
+    contentfulSimpleBlogPost {
       slug
+      id
+      contentful_id
       title
-      author {
-        name
-      }
-      publishDate(formatString: "MMMM Do, YYYY")
-      rawDate: publishDate
-      heroImage {
-        gatsbyImage(layout: FULL_WIDTH, placeholder: BLURRED, width: 1280)
-        resize(height: 630, width: 1200) {
-          src
-        }
-      }
       body {
-        raw
-        
-      }
-      tags
-      description {
-        raw
-      }
-    }
-    previous: contentfulBlogPost(slug: { eq: $previousPostSlug }) {
-      slug
-      title
-    }
-    next: contentfulBlogPost(slug: { eq: $nextPostSlug }) {
-      slug
-      title
-    }
+        body
+      } 
+    }    
   }
 `
+
+// contentfulBlogPost(slug: { eq: $slug }) {
+//       slug
+//       title
+//       author {
+//         name
+//       }
+//       publishDate(formatString: "MMMM Do, YYYY")
+//       rawDate: publishDate
+//       heroImage {
+//         gatsbyImage(layout: FULL_WIDTH, placeholder: BLURRED, width: 1280)
+//         resize(height: 630, width: 1200) {
+//           src
+//         }
+//       }
+//       body {
+//         raw
+//
+//       }
+//       tags
+//       description {
+//         raw
+//       }
+//     }
+//     previous: contentfulBlogPost(slug: { eq: $previousPostSlug }) {
+//       slug
+//       title
+//     }
+//     next: contentfulBlogPost(slug: { eq: $nextPostSlug }) {
+//       slug
+//       title
+//     }
